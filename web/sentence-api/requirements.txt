@@ -5,3 +5,5 @@ flask-marshmallow
 marshmallow 
 bcrypt
 Flask-Mail
+pyjwt
+python-dotenv

@@ -1,15 +1,17 @@
+from flask import Flask
 from flask_mail import Mail
 
-from app import create_app
+from config import MAIL_PASSWORD, MAIL_PORT, MAIL_SERVER, MAIL_USE_SSL, MAIL_USE_TLS, MAIL_USERNAME
+
 
 def getEmailInstance():
-    server = create_app()
+    server = Flask(__name__)
     
-    server.config['MAIL_SERVER']='smtp.mailtrap.io'
-    server.config['MAIL_PORT'] = 2525
-    server.config['MAIL_USERNAME'] = '005290e9bb6351'
-    server.config['MAIL_PASSWORD'] = 'b1f0ba88458501'
-    server.config['MAIL_USE_TLS'] = True
+    server.config['MAIL_SERVER'] = MAIL_SERVER
+    server.config['MAIL_PORT'] = int(MAIL_PORT)
+    server.config['MAIL_USERNAME'] = MAIL_USERNAME
+    server.config['MAIL_PASSWORD'] = MAIL_PASSWORD
+    server.config['MAIL_USE_TLS'] = bool(MAIL_USE_TLS)
     server.config['MAIL_USE_SSL'] = False
 
     return Mail(server)

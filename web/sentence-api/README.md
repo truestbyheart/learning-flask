@@ -61,3 +61,7 @@
     refresh_token: string  // forever but changes when access_token is refreshed
 }
 ```
+
+# References
+- [mailtrap and flask-mail](https://mailtrap.io/blog/flask-email-sending/)
+- [Jwt and flask implementation](https://geekflare.com/securing-flask-api-with-jwt/)

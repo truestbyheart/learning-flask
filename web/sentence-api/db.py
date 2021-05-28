@@ -1,6 +1,8 @@
 from pymongo import MongoClient
 
+from config import MONGODB_URI
+
 def getDbInstance():
-    client = MongoClient('mongodb://sentence:LIVE101wm@localhost:27017')
+    client = MongoClient(MONGODB_URI)
     return client['sentences']
     
