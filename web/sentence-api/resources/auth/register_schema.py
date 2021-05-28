@@ -1,5 +1,4 @@
-from flask_marshmallow import Schema, fields
-
+from marshmallow import Schema, fields
 
 class RegisterSchema(Schema):
     """

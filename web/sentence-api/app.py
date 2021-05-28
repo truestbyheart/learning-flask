@@ -1,17 +1,22 @@
+import os
+import re
+
 from flask import Flask
 from flask_restful import Api
 
 # import resources
-import resources.home as H
-import resources.auth.register as R
+from resources.home import Home
+from resources.auth.register import Register
 
-app = Flask(__name__)
+def create_app():
+    server = Flask(__name__)
+    api = Api(server)
 
-api = Api(app)
+    # register the resources
+    api.add_resource(Home, '/')
+    api.add_resource(Register, '/auth/register')
 
-# register the resources
-api.add_resource(H.Home, '/')
-api.add_resource(R.Register, '/auth/register')
+    return server
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    create_app().run(debug=True)

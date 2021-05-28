@@ -1,46 +1,68 @@
-from sqlite3 import dbapi2
+
 from flask import jsonify, request
 from flask_restful import Resource
-from marshmallow import Schema, fields
+from bcrypt import hashpw, gensalt
+from flask_mail import Message
 
-import resources.database.db as db
-
-
-class RegisterSchema(Schema):
-    """
-    endpoint: /auth/register
-    parameters:
-        full_name: string,
-        username: string,
-        password: string,
-        email: string
-    """
-    full_name = fields.Str(required=True)
-    username = fields.Str(required=True)
-    password = fields.Str(required=True)
-    email = fields.Email(required=True)
+from db import getDbInstance
+# from mail import getEmailInstance
+from .register_schema import RegisterSchema
 
 
-reg_validation_schema = RegisterSchema()
+def check_duplicate_credentials(req_body, userCollection):
+        # check if the email already exists
+        email_check = userCollection.find_one(
+            {"email": req_body['email']})
 
+        # check if the username is taken
+        username_check = userCollection.find_one(
+            {"username": req_body['username']})
+
+        if email_check is not None:
+            return jsonify({"status": 409, "message":"email already exist"})
+        elif username_check is not None:
+            return jsonify({ "status": 409, "message": "username is already taken"})
+
+        return None
 
 class Register(Resource):
-
-    # def __init__(self, db):
-    #     self.database = db
-
     def post(self):
         req_body = request.get_json()
 
         # validate the request body
-        errors = reg_validation_schema.validate(req_body)
+        errors = RegisterSchema().validate(req_body)
+
         if errors:
             return jsonify({"status": 400, "errors": errors})
 
-        # check if the user exist
-        print(db)
-        userCollection = db['users']
-        user = userCollection.find_one(
-            {"email": req_body['email'], "username": req_body['username']})
-        print(user)
+        # instantiate db
+        userCollection = getDbInstance()['users']
+
+        # check for duplicate entries i.e email and username
+        has_duplicate = check_duplicate_credentials(req_body, userCollection)
+
+        if has_duplicate is not None:
+            return has_duplicate
+
+        # hash password
+        hashedPassword = hashpw(req_body['password'].encode('utf-8'), gensalt()).decode('utf-8')
+
+        # create new user
+        userCollection.insert_one({
+            "full_name": req_body['full_name'],
+            "username": req_body['username'],
+            "email": req_body['email'],
+            "password": hashedPassword,
+            "is_verified": False
+        })
+
+
+        # send verification email to new client
+        # mailer = getEmailInstance()
+
+        # # create Message
+        # msg = Message('Please verify your email for SentenceHQ', sender="margalight@0outlook.com", recipients=[req_body['email']])
+        # msg.body = "hi ${req_body}, click the link below to verify your sentenHQ account"
+        # mailer.send(msg)
+
         return jsonify({"status": 201, "message": "Account created successfully, please verify you email"})
