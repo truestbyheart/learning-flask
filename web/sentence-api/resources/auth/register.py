@@ -1,10 +1,9 @@
 
-from flask import jsonify, request
+from flask import jsonify, render_template, request
 from flask_restful import Resource
 from bcrypt import hashpw, gensalt
 from flask_mail import Message
 import jwt
-import os
 
 from db import getDbInstance
 from config import JWT_SECRET, DOMAIN, SENDER_EMAIL
@@ -74,7 +73,7 @@ class Register(Resource):
           
         # create Message
         msg = Message('Please verify your email for SentenceHQ', sender=SENDER_EMAIL, recipients=[req_body['email']])
-        msg.html = '<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body style="font-family: sans-serif;"><div style="display: block; margin: auto; max-width: 600px;"><p>Hi {username},</p><p>Please click the link below to activate your sentenceHQ account</p><p><a href="{verification}">Click Here</a></p></div></body></html>'.format(username=req_body['username'], verification=DOMAIN+'/auth/verification/'+verification_jwt)
+        msg.html = render_template('verify-account.html', username=req_body['username'], verification=DOMAIN+'/auth/verification/'+verification_jwt)
         mailer.send(msg)
 
         return jsonify({"status": 201, "message": "Account created successfully, please verify you email"})
